@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMD</title>
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: aliceblue;
+        }
+        #main-page.hide {
+			opacity: 0;
+            transition: opacity 0.5s ease;
+		}
+        #main-page {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #JIRA-title {
+            opacity: 0;
+			transform: translateY(50px);
+			transition: opacity 1s ease, transform 1s ease;
+            font-size: 72px;
+            font-weight: 900;
+            text-align: center;
+        }
+        #JIRA-title.show {
+            opacity: 1;
+			transform: translateY(0);
+        }
+        #JIRA-subtitle {
+            font-size: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+			transform: translateY(50px);
+			transition: opacity 1s ease 0.5s, transform 1s ease 0.5s;
+        }
+        #JIRA-subtitle.show {
+            opacity: 1;
+			transform: translateY(0);
+        }
+        .JIRA-subtitle-bold {
+            font-weight: 800;
+            text-decoration: underline;
+        }
+        .big-button {
+            font-size: 30px;
+            border: 1px solid #efefef;
+            background-color:rgba(255, 255, 255, 0.8);
+            margin: 10px;
+            border-radius: 5px;
+            padding: .3rem .5rem;
+            transition: all .2s linear;
+        }
+        #start-button {
+            opacity: 0;
+            transition: opacity 1s ease 1s, transform 1s ease 1s, background-color .2s linear;
+            border-color: #3479d3;
+            color: #3479d3;
+        }
+        #start-button.show {
+            opacity: 1;
+        }
+        #start-button:hover {
+            background: #3479d3;
+            color: #fff;
+        }
+        #start-button:active {
+            background: #0e52ac;
+            color: #fff;
+        }
+        #instruction, #configuration, #configuration-server, #configuration-device, #result-server, #result-device {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 1s ease, transform 1s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid black;
+            border-radius: 5px;
+            width: 60%;
+        }
+        #instruction.show, #configuration.show, #configuration-server.show, #configuration-device.show, #result-server.show, #result-device.show {
+            transform: translateY(0px);
+            opacity: 1;
+        }
+        #instruction.hide, #configuration.hide, #configuration-server.hide, #configuration-device.hide, #result-server.hide, #result-device.hide {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.4s ease, transform 1s ease;
+        }
+        #instruction-title, #configuration-title, #result-title {
+            font-weight: 550;
+            font-size: 24px;
+        }
+        #instruction-content, #configuration-content {
+            width: 90%;
+            text-align: left;
+            white-space: normal;
+        }
+        .configuration-line {
+            height: 30px;
+        }
+        .small-button {
+            font-size: 18px;
+            border: 1px solid #efefef;
+            background-color:rgba(255, 255, 255, 0.8);
+            margin: 10px;
+            border-radius: 5px;
+            padding: .3rem .5rem;
+            transition: all .2s linear;
+        }
+        #ok-button {
+            border-color: #3479d3;
+            color: #3479d3;
+        }
+        #ok-button:hover {
+            background: #3479d3;
+            color: #fff;
+        }
+        #ok-button:active {
+            background: #0e52ac;
+            color: #fff;
+        }
+        #next-button, #complete-button-1, #complete-button-2 {
+            border-color: #24e23d;
+            color: #24e23d;
+        }
+        #next-button:hover, #complete-button-1:hover, #complete-button-2:hover {
+            background: #24e23d;
+            color: #fff;
+        }
+        #next-button:active, #complete-button-1:active, #complete-button-2:active {
+            background: #14b92a;
+            color: #fff;
+        }
+        #back-button-1, #back-button-2, #back-button-3, #back-button-4, #back-button-5 {
+            border-color: #e2a624;
+            color: #e2a624;
+        }
+        #back-button-1:hover, #back-button-2:hover, #back-button-3:hover, #back-button-4:hover, #back-button-5:hover {
+            background: #e2a624;
+            color: #fff;
+        }
+        #back-button-1:active, #back-button-2:active, #back-button-3:active, #back-button-4:active, #back-button-5:active {
+            background: #c98e10;
+            color: #fff;
+        }
+        .configuration-line, .result-line, .result-latency, .result-energy-rec, .result-energy-proc, .result-accuracy, .result-reward, .result-incentive {
+            height: 35px;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+        .configuration-line-tag, .result-line-tag {
+            text-align: left;
+            width: 380px;
+        }
+        .configuration-line-input {
+            width: 100px;
+            height: 20px;
+            margin-left: 10px;
+        }
+        .configuration-line-top {
+            width: 110px;
+            height: 20px;
+            margin-left: 10px;
+            text-align: center;
+        }
+        .result-line-top {
+            width: 100px;
+            height: 20px;
+            margin-left: 10px;
+            text-align: center;
+        }
+        .configuration-module {
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .configuration-explanation {
+            color: gray;
+            font-size: 10px;
+        }
+        .button-module {
+            height: 40px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+        .result-line-num {
+            width: 100px;
+            margin-left: 10px;
+            text-align: center;
+        }
+        #instruction.show {
+            opacity: 1;
+        }
+        .result-latency, .result-energy-rec, .result-energy-proc, .result-accuracy, .result-reward, .result-incentive {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease, transform 1s ease;
+        }
+        #result-server-button, #result-device-button {
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        .result-latency.show, .result-energy-rec.show, .result-energy-proc.show, .result-accuracy.show, .result-reward.show, .result-incentive.show {
+            opacity: 1;
+            transform: translateY(0px);
+        }
+        #result-server-button.show, #result-device-button.show {
+            opacity: 1;
+        }
+        .result-latency.hide, .result-energy-rec.hide, .result-energy-proc.hide, .result-accuracy.hide, .result-reward.hide, .result-incentive.hide {
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 1s ease;
+        }
+        #result-server-button.hide, #result-device-button.hide {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div id="main-page">
+        <div id="JIRA-title">IMD</div>
+        <div id="JIRA-subtitle">
+            <div id="JIRA-subtitle-firstline">
+                <span class="JIRA-subtitle-bold">I</span>ncentive <span class="JIRA-subtitle-bold">M</span>echanism <span class="JIRA-subtitle-bold">D</span>esign
+            </div>
+            <div id="JIRA-subtitle-secondline">
+                based on Blockchain Smart Contract
+            </div>
+            <div id="JIRA-subtitle-secondline">
+                for Edge-based Real-time Video Streaming Systems
+            </div>
+        </div>
+        <button id="start-button" class="big-button">Start Simulation!</button>
+    </div>
+    <div id="instruction">
+        <div id="instruction-title">
+            Instruction
+        </div>
+        <div id="instruction-content">
+            <p>This project aims to simulate the smart contract based on the thesis.</p>
+            <p>
+                In Edge-based Real-time Video Streaming Systems, there is a timeline which are divided into \( T \) time slots.
+                At each time slot, several video tasks are offloaded to nearby edge server or edge devices.
+            </p>
+            <p>
+                In order to facilitate the simulation, we just focus on one certain time slot and we assume that the initial backlog of the virtual queue to be \( 0 \).
+                Moreover, we consider only one certain video task, otherwise it will take too much time to input all the parameters for each task in the configuration process.
+            </p>
+        </div>
+        <button id="ok-button" class="small-button">OK</button>
+    </div>
+    <div id="configuration">
+        <div id="configuration-title">
+            Configuration
+        </div>
+        <div id="configuration-content">
+            <p>Please enter the following parameters. Note that all values must be valid in order not to create bugs.</p>
+            <p>For the video task \( j \) in the \( t \)-th time slot : </p>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The offloading decision \( x_j^{[t]} \) :</div>
+                <input type="number" class="configuration-line-input" id="offloading-decision" min="0" max="1" value="1"><br>
+            </div>
+            <div class="configuration-explanation">It should be either \( 0 \) or \( 1 \). \( 0 \) means that the task is offloaded to edge server, \( 1 \) means that the task is offloaded to edge devices.</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The size of video task \( S_j^{[t]} \) :</div>
+                <input type="number" class="configuration-line-input" id="size-task" min="1" max="100" step="0.01" value="20"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 1 \) and \( 100 \).</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">CPU cyles required to process the task \( C_j^{[t]} \) :</div>
+                <input type="number" class="configuration-line-input" id="cycle-task" min="10" max="100" value="50"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 10 \) and \( 100 \). To make it easy, we do not consider the unit.</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The compression latency \( R_j^{[t]} \) :</div>
+                <input type="number" class="configuration-line-input" id="compression-latency" min="0.01" max="10" step="0.01" value="0.5"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.01 \) and \( 10 \). The unit is s.</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The price of unit energy consumption \( \upsilon \) :</div>
+                <input type="number" class="configuration-line-input" id="price-unit" min="0.001" max="10" step="0.001" value="0.5"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.001 \) and \( 10 \). The unit is Ether.</div>
+        </div>
+        <div class="button-module">
+            <button id="next-button" class="small-button">Next</button>
+            <button id="back-button-1" class="small-button">Back</button>
+        </div>
+    </div>
+    <div id="configuration-server">
+        <div id="configuration-title">
+            Server Mode Configuration
+        </div>
+        <div id="configuration-content">
+            <p>Please enter the following parameters. Note that all values must be valid in order not to create bugs.</p>
+            <p>In the server mode, for the video task \( j \) in the \( t \)-th time slot : </p>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The compression ratio \( \beta_j^{[t]} \) :</div>
+                <input type="number" class="configuration-line-input" id="compression-ratio" min="0.01" max="1" step="0.01" value="0.5"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.01 \) and \( 1 \).</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The bandwidth allocated \( \widetilde b_j^{[t]} \) :</div>
+                <input type="number" class="configuration-line-input" id="bandwidth" min="0.1" max="100" step="0.1" value="20"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.1 \) and \( 100 \).</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The computational resources allocated \( \widetilde f_j^{[t]} \) :</div>
+                <input type="number" class="configuration-line-input" id="computational-resources" min="0.1" max="10" step="0.01" value="1"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.1 \) and \( 10 \).</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The computation energy efficiency coefficient \( \widetilde\kappa \) :</div>
+                <input type="number" class="configuration-line-input" id="energy-coefficient" min="0.01" max="1" step="0.01" value="0.5"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.01 \) and \( 1 \).</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The power of edge server in the idle state \( \widetilde P^I \) :</div>
+                <input type="number" class="configuration-line-input" id="power-idle" min="1" max="10" step="0.1" value="5"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 1 \) and \( 10 \).</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The parameter \( \vartheta_j^{[t]} \) :</div>
+                <input type="number" class="configuration-line-input" id="parameter-vartheta" min="0.5" max="2" step="0.1" value="1"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.5 \) and \( 2 \). It's associated with the accuracy.</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The parameter \( \theta_j^{[t]} \) :</div>
+                <input type="number" class="configuration-line-input" id="parameter-theta" min="0.01" max="0.5" step="0.01" value="0.3"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.01 \) and \( 0.5 \). It's associated with the accuracy.</div>
+        </div>
+        <div class="button-module">
+            <button id="complete-button-1" class="small-button">Complete</button>
+            <button id="back-button-2" class="small-button">Back</button>
+        </div>
+    </div>
+    <div id="configuration-device">
+        <div id="configuration-title">
+            Device Mode Configuration
+        </div>
+        <div id="configuration-content">
+            <p>Please enter the following parameters. Note that all values must be valid in order not to create bugs.</p>
+            <p>For simplicity, we assume that there are only three edge devices (\( K=3 \)): \(ED_1, ED_2, ED_3 \).</p>
+            <p>In the device mode, for the video task \( j \) in the \( t \)-th time slot : </p>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag"></div>
+                <div class="configuration-line-top">\( k=1 \)</div>
+                <div class="configuration-line-top">\( k=2 \)</div>
+                <div class="configuration-line-top">\( k=3 \)</div>
+            </div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The compression ratio \( \alpha_{k,j}^{[t]} \) :</div>
+                <input type="number" class="configuration-line-input" id="compression-ratio-1" min="0.01" max="1" step="0.01" value="0.4"><br>
+                <input type="number" class="configuration-line-input" id="compression-ratio-2" min="0.01" max="1" step="0.01" value="0.6"><br>
+                <input type="number" class="configuration-line-input" id="compression-ratio-3" min="0.01" max="1" step="0.01" value="0.5"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.01 \) and \( 1 \).</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The bandwidth allocated \( b_{k,j}^{[t]} \) :</div>
+                <input type="number" class="configuration-line-input" id="bandwidth-1" min="0.1" max="100" step="0.1" value="6"><br>
+                <input type="number" class="configuration-line-input" id="bandwidth-2" min="0.1" max="100" step="0.1" value="5"><br>
+                <input type="number" class="configuration-line-input" id="bandwidth-3" min="0.1" max="100" step="0.1" value="9"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.1 \) and \( 100 \).</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The computational resources allocated \( f_{k,j}^{[t]} \) :</div>
+                <input type="number" class="configuration-line-input" id="computational-resources-1" min="0.1" max="10" step="0.01" value="0.7"><br>
+                <input type="number" class="configuration-line-input" id="computational-resources-2" min="0.1" max="10" step="0.01" value="1.2"><br>
+                <input type="number" class="configuration-line-input" id="computational-resources-3" min="0.1" max="10" step="0.01" value="1.1"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.1 \) and \( 10 \).</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The computation energy efficiency coefficient \( \kappa \) :</div>
+                <div class="configuration-line-top"></div>
+                <input type="number" class="configuration-line-input" id="energy-coefficient-1" min="0.01" max="1" step="0.01" value="0.5"><br>
+                <div class="configuration-line-top"></div>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.01 \) and \( 1 \).</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The power of edge device in the idle state \( P_k^I \) :</div>
+                <input type="number" class="configuration-line-input" id="power-idle-1" min="1" max="10" step="0.1" value="9"><br>
+                <input type="number" class="configuration-line-input" id="power-idle-2" min="1" max="10" step="0.1" value="6"><br>
+                <input type="number" class="configuration-line-input" id="power-idle-3" min="1" max="10" step="0.1" value="5"><br>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 1 \) and \( 10 \).</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The parameter \( \varrho_j^{[t]} \) :</div>
+                <div class="configuration-line-top"></div>
+                <input type="number" class="configuration-line-input" id="parameter-varrho" min="0.5" max="2" step="0.1" value="1"><br>
+                <div class="configuration-line-top"></div>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.5 \) and \( 2 \). It's associated with the accuracy.</div>
+        </div>
+        <div class="configuration-module">
+            <div class="configuration-line">
+                <div class="configuration-line-tag">The parameter \( \zeta_j^{[t]} \) :</div>
+                <div class="configuration-line-top"></div>
+                <input type="number" class="configuration-line-input" id="parameter-zeta" min="0.01" max="0.5" step="0.01" value="0.3"><br>
+                <div class="configuration-line-top"></div>
+            </div>
+            <div class="configuration-explanation">It should be a number between \( 0.01 \) and \( 0.5 \). It's associated with the accuracy.</div>
+        </div>
+        <div class="button-module">
+            <button id="complete-button-2" class="small-button">Complete</button>
+            <button id="back-button-3" class="small-button">Back</button>
+        </div>
+    </div>
+    <div id="result-server">
+        <div id="result-title">
+            Result
+        </div>
+        <div class="result-latency" id="result-latency-server">
+            <div class="result-line-tag">Latency of the server mode \( l_S^{[t]} \): </div>
+            <div class="result-line-num" id="result-latency-server-num"></div>
+        </div>
+        <div class="result-energy-rec" id="result-energy-rec-server">
+            <div class="result-line-tag">Energy consumption for receiving \( \widetilde e_{rec}^{[t]} \): </div>
+            <div class="result-line-num" id="result-energy-rec-server-num"></div>
+        </div>
+        <div class="result-energy-proc" id="result-energy-proc-server">
+            <div class="result-line-tag">Energy consumption for processing \( \widetilde e_{proc}^{[t]} \): </div>
+            <div class="result-line-num" id="result-energy-proc-server-num"></div>
+        </div>
+        <div class="result-accuracy" id="result-accuracy-server">
+            <div class="result-line-tag">Accuracy \( \phi_j^{[t]} \): </div>
+            <div class="result-line-num" id="result-accuracy-server-num"></div>
+        </div>
+        <div class="result-reward" id="result-reward-server">
+            <div class="result-line-tag">Reward \( \mathcal{W}_j^{[t]} \): </div>
+            <div class="result-line-num" id="result-reward-server-num"></div>
+        </div>
+        <div class="result-incentive" id="result-incentive-server">
+            <div class="result-line-tag">Incentives given to processor \( \mathcal{R}^{[t]} \): </div>
+            <div class="result-line-num" id="result-incentive-server-num"></div>
+        </div>
+        <div class="button-module" id="result-server-button">
+            <button id="back-button-4" class="small-button">Back</button>
+        </div>
+    </div>
+    <div id="result-device">
+        <div id="result-title">
+            Result
+        </div>
+        <div class="result-line">
+            <div class="result-line-tag"></div>
+            <div class="result-line-top">\( k=1 \)</div>
+            <div class="result-line-top">\( k=2 \)</div>
+            <div class="result-line-top">\( k=3 \)</div>
+        </div>
+        <div class="result-latency" id="result-latency-device">
+            <div class="result-line-tag">Latency of the device mode \( l_k^{[t]} \): </div>
+            <div class="result-line-num" id="result-latency-device-1-num"></div>
+            <div class="result-line-num" id="result-latency-device-2-num"></div>
+            <div class="result-line-num" id="result-latency-device-3-num"></div>
+        </div>
+        <div class="result-energy-rec" id="result-energy-rec-device">
+            <div class="result-line-tag">Energy consumption for receiving \( e_{rec,k}^{[t]} \): </div>
+            <div class="result-line-num" id="result-energy-rec-device-1-num"></div>
+            <div class="result-line-num" id="result-energy-rec-device-2-num"></div>
+            <div class="result-line-num" id="result-energy-rec-device-3-num"></div>
+        </div>
+        <div class="result-energy-proc" id="result-energy-proc-device">
+            <div class="result-line-tag">Energy consumption for processing \( e_{proc,k}^{[t]} \): </div>
+            <div class="result-line-num" id="result-energy-proc-device-1-num"></div>
+            <div class="result-line-num" id="result-energy-proc-device-2-num"></div>
+            <div class="result-line-num" id="result-energy-proc-device-3-num"></div>
+        </div>
+        <div class="result-accuracy" id="result-accuracy-device">
+            <div class="result-line-tag">Accuracy \( \phi_{j,k}^{[t]} \): </div>
+            <div class="result-line-num" id="result-accuracy-device-1-num"></div>
+            <div class="result-line-num" id="result-accuracy-device-2-num"></div>
+            <div class="result-line-num" id="result-accuracy-device-3-num"></div>
+        </div>
+        <div class="result-reward" id="result-reward-device">
+            <div class="result-line-tag">Reward \( \mathcal{W}_{j,k}^{[t]} \): </div>
+            <div class="result-line-num" id="result-reward-device-1-num"></div>
+            <div class="result-line-num" id="result-reward-device-2-num"></div>
+            <div class="result-line-num" id="result-reward-device-3-num"></div>
+        </div>
+        <div class="result-incentive" id="result-incentive-device">
+            <div class="result-line-tag">Incentives given to processor \( \mathcal{R}_k^{[t]} \): </div>
+            <div class="result-line-num" id="result-incentive-device-1-num"></div>
+            <div class="result-line-num" id="result-incentive-device-2-num"></div>
+            <div class="result-line-num" id="result-incentive-device-3-num"></div>
+        </div>
+        <div class="button-module" id="result-device-button">
+            <button id="back-button-5" class="small-button">Back</button>
+        </div>
+    </div>
+    <script>
+        let instructionDiv=document.querySelector("#instruction");
+        let configurationDiv=document.querySelector("#configuration");
+        let configurationServerDiv=document.querySelector("#configuration-server");
+        let configurationDeviceDiv=document.querySelector("#configuration-device");
+        let resultServerDiv=document.querySelector("#result-server");
+        let resultDeviceDiv=document.querySelector("#result-device");
+        instructionDiv.style.display="none";
+        configurationDiv.style.display="none";
+        configurationServerDiv.style.display="none";
+        configurationDeviceDiv.style.display="none";
+        resultServerDiv.style.display="none";
+        resultDeviceDiv.style.display="none";
+        let okButton=document.querySelector("#ok-button");
+        okButton.addEventListener('click',showConfiguration);
+        let nextButton=document.querySelector("#next-button");
+        nextButton.addEventListener('click',showNextConfiguration);
+        let backButton1=document.querySelector("#back-button-1");
+        backButton1.addEventListener('click',backButtonAction1);
+        let backButton2=document.querySelector("#back-button-2");
+        backButton2.addEventListener('click',backButtonAction2);
+        let backButton3=document.querySelector("#back-button-3");
+        backButton3.addEventListener('click',backButtonAction3);
+        let backButton4=document.querySelector("#back-button-4");
+        backButton4.addEventListener('click',backButtonAction4);
+        let backButton5=document.querySelector("#back-button-5");
+        backButton5.addEventListener('click',backButtonAction5);
+        let completeButton1=document.querySelector("#complete-button-1");
+        completeButton1.addEventListener('click',completeButtonAction1);
+        let completeButton2=document.querySelector("#complete-button-2");
+        completeButton2.addEventListener('click',completeButtonAction2);
+
+        window.onload = function() {
+			document.getElementById("JIRA-title").classList.add("show");
+            document.getElementById("JIRA-subtitle").classList.add("show");
+            document.getElementById("start-button").classList.add("show");
+            document.getElementById("instruction").classList.add("hide");
+            document.getElementById("configuration").classList.add("hide");
+            document.getElementById("configuration-server").classList.add("hide");
+            document.getElementById("configuration-device").classList.add("hide");
+            document.getElementById("result-server").classList.add("hide");
+            document.getElementById("result-device").classList.add("hide");
+
+            document.getElementById("result-latency-server").classList.add("hide");
+            document.getElementById("result-energy-rec-server").classList.add("hide");
+            document.getElementById("result-energy-proc-server").classList.add("hide");
+            document.getElementById("result-accuracy-server").classList.add("hide");
+            document.getElementById("result-reward-server").classList.add("hide");
+            document.getElementById("result-incentive-server").classList.add("hide");
+            document.getElementById("result-server-button").classList.add("hide");
+            
+            document.getElementById("result-latency-device").classList.add("hide");
+            document.getElementById("result-energy-rec-device").classList.add("hide");
+            document.getElementById("result-energy-proc-device").classList.add("hide");
+            document.getElementById("result-accuracy-device").classList.add("hide");
+            document.getElementById("result-reward-device").classList.add("hide");
+            document.getElementById("result-incentive-device").classList.add("hide");
+            document.getElementById("result-device-button").classList.add("hide");
+		}
+        let startButton=document.querySelector("#start-button");
+        startButton.addEventListener('click',startSimulation);
+
+        function startSimulation ( ) {
+            document.getElementById("main-page").classList.add("hide");
+            
+            setTimeout(function() {
+                document.querySelector("#main-page").style.display="none";
+                document.querySelector("#instruction").style.display="flex";
+			}, 1000);
+
+            setTimeout(function() {
+                document.getElementById("instruction").classList.remove("hide");
+                document.getElementById("instruction").classList.add("show");
+			}, 1500);
+        }
+        function showConfiguration ( ) {
+            document.getElementById("instruction").classList.remove("show");
+            document.getElementById("instruction").classList.add("hide");
+
+            setTimeout(function() {
+                document.querySelector("#instruction").style.display="none";
+                document.querySelector("#configuration").style.display="flex";
+			}, 500);
+
+            setTimeout(function() {
+                document.getElementById("configuration").classList.remove("hide");
+                document.getElementById("configuration").classList.add("show");
+			}, 1000);
+        }
+        function showNextConfiguration ( ) {
+            document.getElementById("configuration").classList.remove("show");
+            document.getElementById("configuration").classList.add("hide");
+
+            let modeInfo=document.querySelector("#offloading-decision").value;
+            if (modeInfo==0) {
+                setTimeout(function() {
+                    document.querySelector("#configuration").style.display="none";
+                    document.querySelector("#configuration-server").style.display="flex";
+                }, 500);
+
+                setTimeout(function() {
+                    document.getElementById("configuration-server").classList.remove("hide");
+                    document.getElementById("configuration-server").classList.add("show");
+                }, 1000);
+            }
+            else {
+                setTimeout(function() {
+                    document.querySelector("#configuration").style.display="none";
+                    document.querySelector("#configuration-device").style.display="flex";
+                }, 500);
+
+                setTimeout(function() {
+                    document.getElementById("configuration-device").classList.remove("hide");
+                    document.getElementById("configuration-device").classList.add("show");
+                }, 1000);
+            }
+        }
+        function backButtonAction1 ( ) {
+            document.getElementById("configuration").classList.remove("show");
+            document.getElementById("configuration").classList.add("hide");
+
+            setTimeout(function() {
+                document.querySelector("#configuration").style.display="none";
+                document.querySelector("#instruction").style.display="flex";
+			}, 500);
+
+            setTimeout(function() {
+                document.getElementById("instruction").classList.remove("hide");
+                document.getElementById("instruction").classList.add("show");
+			}, 1000);
+        }
+        function backButtonAction2 ( ) {
+            document.getElementById("configuration-server").classList.remove("show");
+            document.getElementById("configuration-server").classList.add("hide");
+
+            setTimeout(function() {
+                document.querySelector("#configuration-server").style.display="none";
+                document.querySelector("#configuration").style.display="flex";
+			}, 500);
+
+            setTimeout(function() {
+                document.getElementById("configuration").classList.remove("hide");
+                document.getElementById("configuration").classList.add("show");
+			}, 1000);
+        }
+        function backButtonAction3 ( ) {
+            document.getElementById("configuration-device").classList.remove("show");
+            document.getElementById("configuration-device").classList.add("hide");
+
+            setTimeout(function() {
+                document.querySelector("#configuration-device").style.display="none";
+                document.querySelector("#configuration").style.display="flex";
+			}, 500);
+
+            setTimeout(function() {
+                document.getElementById("configuration").classList.remove("hide");
+                document.getElementById("configuration").classList.add("show");
+			}, 1000);
+        }
+        function backButtonAction4 ( ) {
+            document.getElementById("result-server").classList.remove("show");
+            document.getElementById("result-server").classList.add("hide");
+
+            setTimeout(function() {
+                document.querySelector("#result-server").style.display="none";
+                document.querySelector("#configuration-server").style.display="flex";
+			}, 500);
+
+            setTimeout(function() {
+                document.getElementById("configuration-server").classList.remove("hide");
+                document.getElementById("configuration-server").classList.add("show");
+
+                document.getElementById("result-latency-server").classList.remove("show");
+                document.getElementById("result-latency-server").classList.add("hide");
+                document.getElementById("result-energy-rec-server").classList.remove("show");
+                document.getElementById("result-energy-rec-server").classList.add("hide");
+                document.getElementById("result-energy-proc-server").classList.remove("show");
+                document.getElementById("result-energy-proc-server").classList.add("hide");
+                document.getElementById("result-accuracy-server").classList.remove("show");
+                document.getElementById("result-accuracy-server").classList.add("hide");
+                document.getElementById("result-reward-server").classList.remove("show");
+                document.getElementById("result-reward-server").classList.add("hide");
+                document.getElementById("result-incentive-server").classList.remove("show");
+                document.getElementById("result-incentive-server").classList.add("hide");
+                document.getElementById("result-server-button").classList.remove("show");
+                document.getElementById("result-server-button").classList.add("hide");
+			}, 1000);
+        }
+        function backButtonAction5 ( ) {
+            document.getElementById("result-device").classList.remove("show");
+            document.getElementById("result-device").classList.add("hide");
+
+            setTimeout(function() {
+                document.querySelector("#result-device").style.display="none";
+                document.querySelector("#configuration-device").style.display="flex";
+			}, 500);
+
+            setTimeout(function() {
+                document.getElementById("configuration-device").classList.remove("hide");
+                document.getElementById("configuration-device").classList.add("show");
+                
+                document.getElementById("result-latency-device").classList.remove("show");
+                document.getElementById("result-latency-device").classList.add("hide");
+                document.getElementById("result-energy-rec-device").classList.remove("show");
+                document.getElementById("result-energy-rec-device").classList.add("hide");
+                document.getElementById("result-energy-proc-device").classList.remove("show");
+                document.getElementById("result-energy-proc-device").classList.add("hide");
+                document.getElementById("result-accuracy-device").classList.remove("show");
+                document.getElementById("result-accuracy-device").classList.add("hide");
+                document.getElementById("result-reward-device").classList.remove("show");
+                document.getElementById("result-reward-device").classList.add("hide");
+                document.getElementById("result-incentive-device").classList.remove("show");
+                document.getElementById("result-incentive-device").classList.add("hide");
+                document.getElementById("result-device-button").classList.remove("show");
+                document.getElementById("result-device-button").classList.add("hide");
+			}, 1000);
+        }
+        function completeButtonAction1 ( ) {
+            document.getElementById("configuration-server").classList.remove("show");
+            document.getElementById("configuration-server").classList.add("hide");
+            document.getElementById("back-button-4").disabled=true;
+
+            setTimeout(function() {
+                document.querySelector("#configuration-server").style.display="none";
+                document.querySelector("#result-server").style.display="flex";
+			}, 500);
+
+            setTimeout(function() {
+                document.getElementById("result-server").classList.remove("hide");
+                document.getElementById("result-server").classList.add("show");
+			}, 1000);
+
+            let sizeTask=parseFloat(document.querySelector("#size-task").value);
+            let cycleTask=parseFloat(document.querySelector("#cycle-task").value);
+            let compressionLatency=parseFloat(document.querySelector("#compression-latency").value);
+            let compressionRatio=parseFloat(document.querySelector("#compression-ratio").value);
+            let bandwidth=parseFloat(document.querySelector("#bandwidth").value);
+            let computationalResources=parseFloat(document.querySelector("#computational-resources").value);
+            let energyCoefficient=parseFloat(document.querySelector("#energy-coefficient").value);
+            let powerIdle=parseFloat(document.querySelector("#power-idle").value);
+            let parameterVartheta=parseFloat(document.querySelector("#parameter-vartheta").value);
+            let parameterTheta=parseFloat(document.querySelector("#parameter-theta").value);
+            let priceUnit=parseFloat(document.querySelector("#price-unit").value);
+
+            let totalLatency=compressionRatio*(sizeTask/bandwidth+cycleTask/computationalResources+compressionLatency);
+            let totalEnergyRec=powerIdle*compressionRatio*(sizeTask/bandwidth+compressionLatency);
+            let totalEnergyProc=compressionRatio*cycleTask*energyCoefficient*computationalResources*computationalResources;
+            let accuracy=parameterVartheta*Math.log2(compressionRatio/parameterTheta);
+            accuracy=Math.min(Math.max(accuracy,0),1);
+            let reward=sizeTask*accuracy;
+            let incentive=reward-priceUnit*(totalEnergyProc+totalEnergyRec);
+
+            let resultLatencyServerNumDiv=document.querySelector("#result-latency-server-num");
+            resultLatencyServerNumDiv.innerText=totalLatency.toFixed(5);
+            let resultEnergyRecServerNumDiv=document.querySelector("#result-energy-rec-server-num");
+            resultEnergyRecServerNumDiv.innerText=totalEnergyRec.toFixed(5);
+            let resultEnergyProcServerNumDiv=document.querySelector("#result-energy-proc-server-num");
+            resultEnergyProcServerNumDiv.innerText=totalEnergyProc.toFixed(5);
+            let resultAccuracyNumDiv=document.querySelector("#result-accuracy-server-num");
+            resultAccuracyNumDiv.innerText=accuracy.toFixed(5);
+            let resultRewardNumDiv=document.querySelector("#result-reward-server-num");
+            resultRewardNumDiv.innerText=reward.toFixed(5);
+            let resultIncentiveNumDiv=document.querySelector("#result-incentive-server-num");
+            resultIncentiveNumDiv.innerText=incentive.toFixed(5);
+
+            setTimeout(function() {
+                document.getElementById("result-latency-server").classList.remove("hide");
+                document.getElementById("result-latency-server").classList.add("show");
+			}, 2000);
+            setTimeout(function() {
+                document.getElementById("result-energy-rec-server").classList.remove("hide");
+                document.getElementById("result-energy-rec-server").classList.add("show");
+			}, 3000);
+            setTimeout(function() {
+                document.getElementById("result-energy-proc-server").classList.remove("hide");
+                document.getElementById("result-energy-proc-server").classList.add("show");
+			}, 4000);
+            setTimeout(function() {
+                document.getElementById("result-accuracy-server").classList.remove("hide");
+                document.getElementById("result-accuracy-server").classList.add("show");
+			}, 5000);
+            setTimeout(function() {
+                document.getElementById("result-reward-server").classList.remove("hide");
+                document.getElementById("result-reward-server").classList.add("show");
+			}, 6000);
+            setTimeout(function() {
+                document.getElementById("result-incentive-server").classList.remove("hide");
+                document.getElementById("result-incentive-server").classList.add("show");
+			}, 7000);
+            setTimeout(function() {
+                document.getElementById("result-server-button").classList.remove("hide");
+                document.getElementById("result-server-button").classList.add("show");
+			}, 8000);
+            setTimeout(function() {
+                document.getElementById("back-button-4").disabled=false;
+			}, 9000);
+        }
+        function completeButtonAction2 ( ) {
+            document.getElementById("configuration-device").classList.remove("show");
+            document.getElementById("configuration-device").classList.add("hide");
+            document.getElementById("back-button-5").disabled=true;
+
+            setTimeout(function() {
+                document.querySelector("#configuration-device").style.display="none";
+                document.querySelector("#result-device").style.display="flex";
+			}, 500);
+
+            setTimeout(function() {
+                document.getElementById("result-device").classList.remove("hide");
+                document.getElementById("result-device").classList.add("show");
+			}, 1000);
+
+            let sizeTask=parseFloat(document.querySelector("#size-task").value);
+            let cycleTask=parseFloat(document.querySelector("#cycle-task").value);
+            let compressionLatency=parseFloat(document.querySelector("#compression-latency").value);
+            let compressionRatio1=parseFloat(document.querySelector("#compression-ratio-1").value);
+            let compressionRatio2=parseFloat(document.querySelector("#compression-ratio-2").value);
+            let compressionRatio3=parseFloat(document.querySelector("#compression-ratio-3").value);
+            let bandwidth1=parseFloat(document.querySelector("#bandwidth-1").value);
+            let bandwidth2=parseFloat(document.querySelector("#bandwidth-2").value);
+            let bandwidth3=parseFloat(document.querySelector("#bandwidth-3").value);
+            let computationalResources1=parseFloat(document.querySelector("#computational-resources-1").value);
+            let computationalResources2=parseFloat(document.querySelector("#computational-resources-2").value);
+            let computationalResources3=parseFloat(document.querySelector("#computational-resources-3").value);
+            let energyCoefficient=parseFloat(document.querySelector("#energy-coefficient-1").value);
+            let powerIdle1=parseFloat(document.querySelector("#power-idle-1").value);
+            let powerIdle2=parseFloat(document.querySelector("#power-idle-2").value);
+            let powerIdle3=parseFloat(document.querySelector("#power-idle-3").value);
+            let parameterVarrho=parseFloat(document.querySelector("#parameter-varrho").value);
+            let parameterZeta=parseFloat(document.querySelector("#parameter-zeta").value);
+            let priceUnit=parseFloat(document.querySelector("#price-unit").value);
+
+            let totalLatency1=compressionRatio1/3*(sizeTask/bandwidth1+cycleTask/computationalResources1+compressionLatency);
+            let totalLatency2=compressionRatio2/3*(sizeTask/bandwidth2+cycleTask/computationalResources2+compressionLatency);
+            let totalLatency3=compressionRatio3/3*(sizeTask/bandwidth3+cycleTask/computationalResources3+compressionLatency);
+            let totalEnergyRec1=powerIdle1*compressionRatio1*(sizeTask/bandwidth1/3);
+            let totalEnergyRec2=powerIdle2*compressionRatio2*(sizeTask/bandwidth2/3);
+            let totalEnergyRec3=powerIdle3*compressionRatio3*(sizeTask/bandwidth3/3);
+            let totalEnergyProc1=1/3*compressionRatio1*cycleTask*energyCoefficient*computationalResources1*computationalResources1;
+            let totalEnergyProc2=1/3*compressionRatio2*cycleTask*energyCoefficient*computationalResources2*computationalResources2;
+            let totalEnergyProc3=1/3*compressionRatio3*cycleTask*energyCoefficient*computationalResources3*computationalResources3;
+            let accuracy1=parameterVarrho*Math.log2(compressionRatio1/parameterZeta);
+            let accuracy2=parameterVarrho*Math.log2(compressionRatio2/parameterZeta);
+            let accuracy3=parameterVarrho*Math.log2(compressionRatio3/parameterZeta);
+            accuracy1=Math.min(Math.max(accuracy1,0),1);
+            accuracy2=Math.min(Math.max(accuracy2,0),1);
+            accuracy3=Math.min(Math.max(accuracy3,0),1);
+            let reward1=sizeTask*accuracy1/3;
+            let reward2=sizeTask*accuracy2/3;
+            let reward3=sizeTask*accuracy3/3;
+            let incentive1=reward1-priceUnit*(totalEnergyProc1+totalEnergyRec1);
+            let incentive2=reward2-priceUnit*(totalEnergyProc2+totalEnergyRec2);
+            let incentive3=reward3-priceUnit*(totalEnergyProc3+totalEnergyRec3);
+
+            let resultLatencyDevice1NumDiv=document.querySelector("#result-latency-device-1-num");
+            resultLatencyDevice1NumDiv.innerText=totalLatency1.toFixed(5);
+            let resultLatencyDevice2NumDiv=document.querySelector("#result-latency-device-2-num");
+            resultLatencyDevice2NumDiv.innerText=totalLatency2.toFixed(5);
+            let resultLatencyDevice3NumDiv=document.querySelector("#result-latency-device-3-num");
+            resultLatencyDevice3NumDiv.innerText=totalLatency3.toFixed(5);
+            let resultEnergyRecDevice1NumDiv=document.querySelector("#result-energy-rec-device-1-num");
+            resultEnergyRecDevice1NumDiv.innerText=totalEnergyRec1.toFixed(5);
+            let resultEnergyRecDevice2NumDiv=document.querySelector("#result-energy-rec-device-2-num");
+            resultEnergyRecDevice2NumDiv.innerText=totalEnergyRec2.toFixed(5);
+            let resultEnergyRecDevice3NumDiv=document.querySelector("#result-energy-rec-device-3-num");
+            resultEnergyRecDevice3NumDiv.innerText=totalEnergyRec3.toFixed(5);
+            let resultEnergyProcDevice1NumDiv=document.querySelector("#result-energy-proc-device-1-num");
+            resultEnergyProcDevice1NumDiv.innerText=totalEnergyProc1.toFixed(5);
+            let resultEnergyProcDevice2NumDiv=document.querySelector("#result-energy-proc-device-2-num");
+            resultEnergyProcDevice2NumDiv.innerText=totalEnergyProc2.toFixed(5);
+            let resultEnergyProcDevice3NumDiv=document.querySelector("#result-energy-proc-device-3-num");
+            resultEnergyProcDevice3NumDiv.innerText=totalEnergyProc3.toFixed(5);
+            let resultAccuracy1NumDiv=document.querySelector("#result-accuracy-device-1-num");
+            resultAccuracy1NumDiv.innerText=accuracy1.toFixed(5);
+            let resultAccuracy2NumDiv=document.querySelector("#result-accuracy-device-2-num");
+            resultAccuracy2NumDiv.innerText=accuracy2.toFixed(5);
+            let resultAccuracy3NumDiv=document.querySelector("#result-accuracy-device-3-num");
+            resultAccuracy3NumDiv.innerText=accuracy3.toFixed(5);
+            let resultReward1NumDiv=document.querySelector("#result-reward-device-1-num");
+            resultReward1NumDiv.innerText=reward1.toFixed(5);
+            let resultReward2NumDiv=document.querySelector("#result-reward-device-2-num");
+            resultReward2NumDiv.innerText=reward2.toFixed(5);
+            let resultReward3NumDiv=document.querySelector("#result-reward-device-3-num");
+            resultReward3NumDiv.innerText=reward3.toFixed(5);
+            let resultIncentive1NumDiv=document.querySelector("#result-incentive-device-1-num");
+            resultIncentive1NumDiv.innerText=incentive1.toFixed(5);
+            let resultIncentive2NumDiv=document.querySelector("#result-incentive-device-2-num");
+            resultIncentive2NumDiv.innerText=incentive2.toFixed(5);
+            let resultIncentive3NumDiv=document.querySelector("#result-incentive-device-3-num");
+            resultIncentive3NumDiv.innerText=incentive3.toFixed(5);
+
+            setTimeout(function() {
+                document.getElementById("result-latency-device").classList.remove("hide");
+                document.getElementById("result-latency-device").classList.add("show");
+			}, 2000);
+            setTimeout(function() {
+                document.getElementById("result-energy-rec-device").classList.remove("hide");
+                document.getElementById("result-energy-rec-device").classList.add("show");
+			}, 3000);
+            setTimeout(function() {
+                document.getElementById("result-energy-proc-device").classList.remove("hide");
+                document.getElementById("result-energy-proc-device").classList.add("show");
+			}, 4000);
+            setTimeout(function() {
+                document.getElementById("result-accuracy-device").classList.remove("hide");
+                document.getElementById("result-accuracy-device").classList.add("show");
+			}, 5000);
+            setTimeout(function() {
+                document.getElementById("result-reward-device").classList.remove("hide");
+                document.getElementById("result-reward-device").classList.add("show");
+			}, 6000);
+            setTimeout(function() {
+                document.getElementById("result-incentive-device").classList.remove("hide");
+                document.getElementById("result-incentive-device").classList.add("show");
+			}, 7000);
+            setTimeout(function() {
+                document.getElementById("result-device-button").classList.remove("hide");
+                document.getElementById("result-device-button").classList.add("show");
+			}, 8000);
+            setTimeout(function() {
+                document.getElementById("back-button-5").disabled=false;
+			}, 9000);
+        }
+    </script>
+</body>
+</html>
